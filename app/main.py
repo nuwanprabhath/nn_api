@@ -1,3 +1,4 @@
+from tkinter import E
 from unittest import result
 from fastapi import FastAPI
 from starlette.responses import JSONResponse
@@ -13,7 +14,7 @@ create_dataset = SourceFileLoader('create_dataset', '../src/data/create_dataset.
 py_torch = SourceFileLoader('pytorch', '../src/models/pytorch.py').load_module()
 
 app = FastAPI()
-model = torch.load('../models/pytorch_classification_v1.pt')
+model = torch.load('../models/pytorch_classification_v2.pt')
 
 @app.get('/health', status_code=200)
 def healthcheck():
@@ -53,10 +54,12 @@ async def predict_beers(info : Request):
     return JSONResponse({"beer_style": predictions})
 
 @app.get("/model/architecture")
-def predict(genre: str,	age: int, income: int, spending: int):
+def info():
     architecture = {
-        layer_1_type: "Linear",
-        layer_2_type: "Linear"
+        "layer_1_type": "Linear",
+        "layer_1_neuron_counts": "6, 15",
+        "layer_2_type": "Linear",
+        "layer_2_neuron_counts": "15, 104"
     }
     return JSONResponse(architecture)
 
@@ -83,7 +86,6 @@ def read_root():
     </html>
     """
     return HTMLResponse(content=html_content, status_code=200)
-
 
 def convert_single_response_arrays(feature):
     """
