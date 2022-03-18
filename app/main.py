@@ -1,6 +1,6 @@
 from tkinter import E
 from unittest import result
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from starlette.responses import JSONResponse
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
@@ -23,16 +23,21 @@ def healthcheck():
 # Change to POST later
 @app.post("/beer/type")
 async def predict_beer(info : Request):
-    features = await info.json()
-    print("Received features:")
-    print(features)
-    features = convert_single_response_arrays(features)
-    print("Converted features:")
-    print(features)
-    features_df = pd.DataFrame(features)
-    X = create_dataset.normalize_features(features_df)
+    try:
+        features = await info.json()
+        print("Received features:")
+        print(features)
+        features = convert_single_response_arrays(features)
+        print("Converted features:")
+        print(features)
+        features_df = pd.DataFrame(features)
+        X = create_dataset.normalize_features(features_df)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Bad request: Check body params and data types are correct")
+    
     print("Normalized features:")
     print(X)
+    
     predictions = py_torch.predict(X, model)
     print("Predictions:")
     print(predictions)
@@ -41,11 +46,15 @@ async def predict_beer(info : Request):
 # Change to POST later
 @app.post("/beers/type")
 async def predict_beers(info : Request):
-    features = await info.json()    
-    print("Received features:")
-    print(features)
-    features_df = pd.DataFrame(features)
-    X = create_dataset.normalize_features(features_df)
+    try:
+        features = await info.json()
+        print("Received features:")
+        print(features)
+        features_df = pd.DataFrame(features)
+        X = create_dataset.normalize_features(features_df)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Bad request: Check body params and data types are correct")
+    
     print("Normalized features:")
     print(X)
     predictions = py_torch.predict(X, model)
